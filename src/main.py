@@ -48,12 +48,19 @@ for city in cities:
                 "units": "metric"
              }
 
-    response = requests.get(BASE_URL, 
-                            params=params,
-                            timeout=30)
-    response.raise_for_status()
+    try:
+        response = requests.get(
+                                  BASE_URL,
+                                  params=params,
+                                  timeout=30
+                               )
+        
+        response.raise_for_status()
+        data = response.json()
 
-    data = response.json()
+    except requests.exceptions.RequestException as error:
+        print(f"Failed to fetch weather data for {city}: {error}")
+        continue
 
     weather_record = {
                         "city": data["name"],
