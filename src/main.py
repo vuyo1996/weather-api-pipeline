@@ -1,14 +1,20 @@
+import logging
 import os
 from datetime import datetime
 from urllib.parse import quote_plus
 
 import pandas as pd
 import requests
-from sqlalchemy import create_engine
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
 pd.set_option("display.max_rows", 10)
 pd.set_option("display.max_columns", None)
+
+logging.basicConfig(
+                      level=logging.INFO,
+                      format="%(asctime)s - %(levelname)s - %(message)s"
+                   )   
 
 load_dotenv()
 
@@ -59,7 +65,7 @@ for city in cities:
         data = response.json()
 
     except requests.exceptions.RequestException as error:
-        print(f"Failed to fetch weather data for {city}: {error}")
+        logging.error(f"Failed to fetch weather data for {city}: {error}")
         continue
 
     weather_record = {
@@ -75,27 +81,35 @@ for city in cities:
                         "weather_timestamp": datetime.fromtimestamp(data["dt"])
                      }
 
+    logging.info(f"Fetched weather data for {data['name']}")
+
     weather_records.append(weather_record)
 
 print("\n")
 
 weather_df = pd.DataFrame(weather_records)
+logging.info(f"Weather dataframe created with {len(weather_df)} records")
 
 weather_df["load_timestamp"] = datetime.now()
 
-print(weather_df.dtypes)
+print("\n")
+
+logging.info(f"Dataframe created successfully")
+logging.info(f"Dataframe shape: {weather_df.shape}")   
 
 print("\n")
 
-print(weather_df)
+null_counts = weather_df.isnull().sum()
+logging.info(f"Null values in each column:\n{null_counts}")
 
 print("\n")
 
-print(f"Null values in each column:\n{weather_df.isnull().sum()}")
+duplicate_counts = weather_df.duplicated().sum()
+logging.info(f"Duplicate rows:\n{duplicate_counts}")
 
 print("\n")
 
-print(f"Duplicate rows:\n{weather_df.duplicated().sum()}")
+logging.info(f"Loading {len(weather_df)} records into PostgreSQL")
 
 weather_df.to_sql(
                     "weather_data",
@@ -106,4 +120,4 @@ weather_df.to_sql(
 
 print("\n")
 
-print("Weather data loaded into PostgreSQL successfully.")
+logging.info("Weather data loaded into PostgreSQL successfully.")
