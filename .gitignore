@@ -3,5 +3,6 @@ __pycache__/
 .ipynb_checkpoints/
 data/
 venv/
+.venv/
 weather_sql_questions.txt
 weather_sql_solutions.txt
